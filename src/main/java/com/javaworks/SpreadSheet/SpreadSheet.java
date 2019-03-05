@@ -2,6 +2,7 @@ package com.javaworks.SpreadSheet;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -75,14 +76,38 @@ public class SpreadSheet {
                 return null;
     }
 
-    private Cell evaluate(Cell cell)
+    private Cell evaluate(Cell currentCell)
     {
-        String expression = cell.get_expression();
+       //AtomicReference<String> expression = new AtomicReference<>(currentCell.get_expression());
+        String expression = currentCell.get_expression();
+        HashSet<CellMapper> dependentCells = currentCell.get_dependencies();
+        dependentCells.forEach(mapper-> {
 
+            String cellToken = mapper.getCellKey();
+            String dependecyKey = mapper.toString();
 
-        return cell;
+            if(this.dependencies.containsKey(dependecyKey)){
+                int row = mapper.getRow();
+                int col = mapper.getCol();
+                Cell refCell = this.sheetCells[row].get(col);
+
+                //TODO: Detect cyclic dependency
+                if(refCell.get_isExpression())
+                    refCell = evaluate(refCell);
+                expression.replace(cellToken, String.valueOf(refCell.get_cellValue()));
+            }
+
+        });
+
+        currentCell.set_cellValue(computeEvalString(expression));
+        return currentCell;
     }
 
+    private double computeEvalString(String exp)
+    {
+        //TODO: Evaluate string expression using java script libraries
+        return 1;
+    }
     private  CellMapper getCell(String token, int currentRow, int currentCol) {
         try {
             int row = (int)token.charAt(0) % 65;

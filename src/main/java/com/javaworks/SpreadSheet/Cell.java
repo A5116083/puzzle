@@ -4,18 +4,18 @@ import java.util.HashSet;
 
 public class Cell
 {
-    private int _cellValue;
+    private double _cellValue;
     private Boolean _isExpression;
     private int _rowId;
     private int _colId;
     private String _expression;
     private HashSet<CellMapper> _dependencies;
 
-    public int get_cellValue() {
+    public double get_cellValue() {
         return _cellValue;
     }
 
-    public void set_cellValue(int _cellValue) {
+    public void set_cellValue(double _cellValue) {
         this._cellValue = _cellValue;
     }
 
@@ -51,7 +51,7 @@ public class Cell
         this._expression = _expression;
     }
 
-    public HashSet<javafx.scene.control.Cell> get_dependencies() {
+    public HashSet<CellMapper> get_dependencies() {
         return _dependencies;
     }
 
