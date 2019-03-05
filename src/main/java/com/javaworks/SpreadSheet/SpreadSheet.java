@@ -2,6 +2,8 @@ package com.javaworks.SpreadSheet;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class SpreadSheet {
@@ -38,14 +40,16 @@ public class SpreadSheet {
                 String expToEvaluate = cell.get_expression();
                 //convert to stream of dependent cell mappers
                 Stream<CellMapper> expTokens =Stream.of(cell.get_expression()
-                                    .split(operatorsRegex)).map(token-> getCell(token, rownumber, colCounter.get()));
+                                    .split(operatorsRegex))
+                                    .map(token-> getCell(token, rownumber, colCounter.get()));
+
+                cell.set_dependencies(expTokens.collect(Collectors.toCollection(HashSet::new)));
 
                 if(expTokens.anyMatch(t-> t.hasFutureDependency())){
 
                     expTokens.forEach(token-> {
                         //Add dependency to the Hashable, key = Dependent cell row|col, Value=> current cell
                         if(dependencies.containsKey(token.toString())){
-                            //TODO:
                             dependencies.get(token.toString()).add(cell);
                         }else {
                             List<Cell> cells = new ArrayList<Cell>();
@@ -57,6 +61,7 @@ public class SpreadSheet {
                     return cell;
                 } else {
                     //Cell has no future dependency , Ok to evaluate and recursively evaluate previous dependencies
+
                     return evaluate(cell);
                 }
 
@@ -72,6 +77,8 @@ public class SpreadSheet {
 
     private Cell evaluate(Cell cell)
     {
+        String expression = cell.get_expression();
+
 
         return cell;
     }

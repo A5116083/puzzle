@@ -9,7 +9,7 @@ public class Cell
     private int _rowId;
     private int _colId;
     private String _expression;
-    //private HashSet<Cell> _dependencies;
+    private HashSet<CellMapper> _dependencies;
 
     public int get_cellValue() {
         return _cellValue;
@@ -51,13 +51,13 @@ public class Cell
         this._expression = _expression;
     }
 
-    /*public HashSet<Cell> get_dependencies() {
+    public HashSet<javafx.scene.control.Cell> get_dependencies() {
         return _dependencies;
     }
 
-    public void set_dependencies(HashSet<Cell> _dependencies) {
+    public void set_dependencies(HashSet<CellMapper> _dependencies) {
         this._dependencies = _dependencies;
-    }*/
+    }
 
     public static Cell create(int row, int col, Object element){
         Cell cell = new Cell();
