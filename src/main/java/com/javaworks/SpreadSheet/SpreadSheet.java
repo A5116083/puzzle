@@ -36,23 +36,27 @@ public class SpreadSheet {
 
             if(cell.get_isExpression()){
                 String expToEvaluate = cell.get_expression();
+                //convert to stream of dependent cell mappers
                 Stream<CellMapper> expTokens =Stream.of(cell.get_expression()
                                     .split(operatorsRegex)).map(token-> getCell(token, rownumber, colCounter.get()));
 
-                if(expTokens.anyMatch(t-> t.hasDependency())){
+                if(expTokens.anyMatch(t-> t.hasFutureDependency())){
 
-                    //Add dependency to the Hashable and leave it
-                    if(dependencies.containsKey(cell.toString())){
-                        //TODO:
-                        dependencies.get(cell.toString()).add(cell);
-                    }else {
-                        List<Cell> cells = new ArrayList<Cell>();
-                        cells.add(cell);
-                        dependencies.put(cell.toString(),cells  );
-                    }
+                    expTokens.forEach(token-> {
+                        //Add dependency to the Hashable, key = Dependent cell row|col, Value=> current cell
+                        if(dependencies.containsKey(token.toString())){
+                            //TODO:
+                            dependencies.get(token.toString()).add(cell);
+                        }else {
+                            List<Cell> cells = new ArrayList<Cell>();
+                            cells.add(cell);
+                            dependencies.put(cell.toString(),cells);
+                        }
+                    });
+
                     return cell;
                 } else {
-                    //Cell has no dependency , Ok to evaluate
+                    //Cell has no future dependency , Ok to evaluate and recursively evaluate previous dependencies
                     return evaluate(cell);
                 }
 
@@ -79,7 +83,7 @@ public class SpreadSheet {
 
             return new CellMapper(row,col,token, currentRow, currentCol);
 
-            
+
         }catch (NumberFormatException e) {
             System.out.println("Data cell format error" + token);
         }

@@ -29,7 +29,7 @@ public class CellMapper {
         return cellKey;
     }
 
-    public  Boolean hasDependency()
+    public  Boolean hasFutureDependency()
     {
 
         if((row > currRow) || (col > currCol))
