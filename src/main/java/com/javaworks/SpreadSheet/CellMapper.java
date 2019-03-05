@@ -37,5 +37,8 @@ public class CellMapper {
         else return false;
     }
 
-
+    @Override
+    public String toString() {
+        return  String.format("%s|%s", String.valueOf(this.getRow()), String.valueOf(this.getCol()));
+    }
 }

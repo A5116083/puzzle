@@ -10,7 +10,7 @@ public class SpreadSheet {
     Tow dimensional dynamic list object to hold the spreadsheet cells
      */
     List<Cell>[] sheetCells;
-    private final String operatorsRegex = "-|+|*|\\|(|)";
+    private final String operatorsRegex = "-|/+|/*|//|/(|/)";
 
     Hashtable<String, List<Cell>> dependencies ;
 
@@ -35,11 +35,30 @@ public class SpreadSheet {
         .map(cell-> {
 
             if(cell.get_isExpression()){
+                String expToEvaluate = cell.get_expression();
                 Stream<CellMapper> expTokens =Stream.of(cell.get_expression()
                                     .split(operatorsRegex)).map(token-> getCell(token, rownumber, colCounter.get()));
 
+                if(expTokens.anyMatch(t-> t.hasDependency())){
+
+                    //Add dependency to the Hashable and leave it
+                    if(dependencies.containsKey(cell.toString())){
+                        //TODO:
+                        dependencies.get(cell.toString()).add(cell);
+                    }else {
+                        List<Cell> cells = new ArrayList<Cell>();
+                        cells.add(cell);
+                        dependencies.put(cell.toString(),cells  );
+                    }
+                    return cell;
+                } else {
+                    //Cell has no dependency , Ok to evaluate
+                    return evaluate(cell);
+                }
+
 
             }
+            //return the cell value
             return  cell;
         });
 
@@ -47,6 +66,11 @@ public class SpreadSheet {
                 return null;
     }
 
+    private Cell evaluate(Cell cell)
+    {
+
+        return cell;
+    }
 
     private  CellMapper getCell(String token, int currentRow, int currentCol) {
         try {
