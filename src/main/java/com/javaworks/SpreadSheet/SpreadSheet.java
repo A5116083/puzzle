@@ -1,5 +1,7 @@
 package com.javaworks.SpreadSheet;
 
+import org.springframework.util.StringUtils;
+
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -26,27 +28,25 @@ public class SpreadSheet {
     public List<Cell> transformToCells(final int rownumber, String rowEntry){
 
         AtomicInteger colCounter = new AtomicInteger(0);
-
+        Stream<Cell>  rowCellsStream =
         Arrays.stream(rowEntry
                 .split(","))
                 .map(col ->
                 {
-                    int localCol = colCounter.get();
-                    colCounter.set(localCol++);
-                   return Cell.create(rownumber, localCol, col);
+                    int localCol = colCounter.incrementAndGet();
+                   return Cell.create(rownumber, localCol-1, col);
                 })
         .map(cell-> {
 
             if(cell.get_isExpression()){
                 String expToEvaluate = cell.get_expression();
                 //convert to stream of dependent cell mappers
-                Stream<CellMapper> expTokens =Stream.of(cell.get_expression()
-                                    .split(operatorsRegex))
-                                    .map(token-> getCell(token, rownumber, colCounter.get()));
+                Stream<CellMapper> expTokens = splitToken(expToEvaluate)
+                                    .map(token-> getCell(token, cell.get_rowId(), cell.get_colId()));
 
                 cell.set_dependencies(expTokens.collect(Collectors.toCollection(HashSet::new)));
 
-                if(expTokens.anyMatch(t-> t.hasFutureDependency())){
+                if(cell.get_dependencies().stream().anyMatch(t-> t.hasFutureDependency())){
 
                     expTokens.forEach(token-> {
                         //Add dependency to the Hashable, key = Dependent cell row|col, Value=> current cell
@@ -68,14 +68,26 @@ public class SpreadSheet {
 
 
             }
-            //return the cell value
+
+            this.sheetCells[rownumber].add(cell);
             return  cell;
         });
 
+        List<Cell> rowCellsList = rowCellsStream.collect(Collectors.toList());
+        sheetCells[rownumber].addAll(rowCellsList);
+        return  rowCellsList;
 
-                return null;
     }
+    public Stream<String> splitToken(String exp){
+        final String operatorsRegex = "[-\\+\\*\\(\\)]";
+        //String exp = "A0+A1*A2";
+        Stream<String> expTokens =Stream.of(exp
+                .split(operatorsRegex))
+                .filter(t-> !StringUtils.isEmpty(t));
 
+        return expTokens;
+
+    }
     private Cell evaluate(Cell currentCell)
     {
        //AtomicReference<String> expression = new AtomicReference<>(currentCell.get_expression());
@@ -86,7 +98,8 @@ public class SpreadSheet {
             String cellToken = mapper.getCellKey();
             String dependecyKey = mapper.toString();
 
-            if(this.dependencies.containsKey(dependecyKey)){
+            //if(this.dependencies.containsKey(dependecyKey))
+            {
                 int row = mapper.getRow();
                 int col = mapper.getCol();
                 Cell refCell = this.sheetCells[row].get(col);
@@ -96,6 +109,7 @@ public class SpreadSheet {
                     refCell = evaluate(refCell);
                 expression.replace(cellToken, String.valueOf(refCell.get_cellValue()));
             }
+
 
         });
 
@@ -111,7 +125,7 @@ public class SpreadSheet {
     private  CellMapper getCell(String token, int currentRow, int currentCol) {
         try {
             int row = (int)token.charAt(0) % 65;
-            int col = Integer.parseInt(token.substring(1,token.length()))-1;
+            int col = Integer.parseInt(token.substring(1,token.length()));
 
             return new CellMapper(row,col,token, currentRow, currentCol);
 

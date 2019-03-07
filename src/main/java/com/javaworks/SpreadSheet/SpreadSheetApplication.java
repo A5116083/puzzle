@@ -8,6 +8,10 @@ public class SpreadSheetApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(SpreadSheetApplication.class, args);
+
+		SpreadSheet sheet = new SpreadSheet();
+
+
 	}
 
 }
