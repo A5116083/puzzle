@@ -32,8 +32,8 @@ public class CellMapper {
     public  Boolean hasFutureDependency()
     {
 
-        if((row > currRow) || (col > currCol))
-            return true;
+        if((row > currRow) || ((row > currRow) && (col > currCol)))
+                return true;
         else return false;
     }
 

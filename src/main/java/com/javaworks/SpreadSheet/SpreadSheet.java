@@ -4,30 +4,37 @@ import org.springframework.util.StringUtils;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptEngine;
+import javax.script.ScriptException;
+
 
 public class SpreadSheet {
 
     /*
     Tow dimensional dynamic list object to hold the spreadsheet cells
      */
-    List<Cell>[] sheetCells;
-    private final String operatorsRegex = "-|/+|/*|//|/(|/)";
+    private static  List<Cell>[] sheetCells;
 
     Hashtable<String, List<Cell>> dependencies ;
+    ScriptEngine engine = null;
 
     public SpreadSheet() {
         //Holds the fixed Rows and dynamic cells
-        List<Cell>[] sheetCells = new ArrayList[26];
+        sheetCells = new ArrayList[26];
         dependencies = new Hashtable<String, List<Cell>> ();
+        ScriptEngineManager mgr = new ScriptEngineManager();
+        engine = mgr.getEngineByName("JavaScript");
     }
 
     public List<Cell> transformToCells(final int rownumber, String rowEntry){
 
         AtomicInteger colCounter = new AtomicInteger(0);
+        if(sheetCells[rownumber]== null)
+            sheetCells[rownumber] = new ArrayList<>();
+
         Stream<Cell>  rowCellsStream =
         Arrays.stream(rowEntry
                 .split(","))
@@ -41,7 +48,7 @@ public class SpreadSheet {
             if(cell.get_isExpression()){
                 String expToEvaluate = cell.get_expression();
                 //convert to stream of dependent cell mappers
-                Stream<CellMapper> expTokens = splitToken(expToEvaluate)
+                Stream<CellMapper> expTokens = splitToken(expToEvaluate).filter(str-> !isNumber(str))
                                     .map(token-> getCell(token, cell.get_rowId(), cell.get_colId()));
 
                 cell.set_dependencies(expTokens.collect(Collectors.toCollection(HashSet::new)));
@@ -59,22 +66,25 @@ public class SpreadSheet {
                         }
                     });
 
+                    this.sheetCells[rownumber].add(colCounter.get()-1, cell);
                     return cell;
                 } else {
                     //Cell has no future dependency , Ok to evaluate and recursively evaluate previous dependencies
 
                     return evaluate(cell);
+
                 }
 
 
             }
 
-            this.sheetCells[rownumber].add(cell);
+            this.sheetCells[rownumber].add(colCounter.get()-1, cell);
             return  cell;
         });
 
         List<Cell> rowCellsList = rowCellsStream.collect(Collectors.toList());
-        sheetCells[rownumber].addAll(rowCellsList);
+
+        sheetCells[rownumber] = rowCellsList;
         return  rowCellsList;
 
     }
@@ -90,37 +100,32 @@ public class SpreadSheet {
     }
     private Cell evaluate(Cell currentCell)
     {
-       //AtomicReference<String> expression = new AtomicReference<>(currentCell.get_expression());
         String expression = currentCell.get_expression();
-        HashSet<CellMapper> dependentCells = currentCell.get_dependencies();
-        dependentCells.forEach(mapper-> {
-
+        for(CellMapper mapper:currentCell.get_dependencies())
+        {
             String cellToken = mapper.getCellKey();
-            String dependecyKey = mapper.toString();
+            Cell refCell = this.sheetCells[mapper.getRow()].get(mapper.getCol());
 
-            //if(this.dependencies.containsKey(dependecyKey))
-            {
-                int row = mapper.getRow();
-                int col = mapper.getCol();
-                Cell refCell = this.sheetCells[row].get(col);
-
-                //TODO: Detect cyclic dependency
-                if(refCell.get_isExpression())
-                    refCell = evaluate(refCell);
-                expression.replace(cellToken, String.valueOf(refCell.get_cellValue()));
-            }
-
-
-        });
-
-        currentCell.set_cellValue(computeEvalString(expression));
+            //TODO: Detect cyclic dependency
+            if(refCell.get_isExpression())
+                refCell = evaluate(refCell);
+            expression = expression.replace(cellToken, String.valueOf(refCell.get_cellValue()));
+        }
+        currentCell.set_cellValue(computeExpression(expression));
         return currentCell;
     }
 
-    private double computeEvalString(String exp)
+
+    private double computeExpression(String exp)
     {
-        //TODO: Evaluate string expression using java script libraries
-        return 1;
+        try {
+            return (double) engine.eval(exp);
+        } catch (ScriptException e) {
+            //TODO: OK to swallow exception or not ?
+            e.printStackTrace();
+            return  -1;
+        }
+
     }
     private  CellMapper getCell(String token, int currentRow, int currentCol) {
         try {
