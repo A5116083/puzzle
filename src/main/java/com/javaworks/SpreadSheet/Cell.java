@@ -9,7 +9,27 @@ public class Cell
     private int _rowId;
     private int _colId;
     private String _expression;
-    private HashSet<CellMapper> _dependencies;
+    private HashSet<Cell> _dependencies;
+
+    public String getToken() {
+        return token;
+    }
+
+    private String token;
+
+    public void setResolved(boolean resolved) {
+        isResolved = resolved;
+    }
+
+    private boolean isResolved;
+
+    public boolean isResolved() {
+        return isResolved;
+    }
+    public boolean allDependeciesResolved(){
+
+        return _dependencies.stream().anyMatch(dep ->! dep.isResolved());
+    }
 
     public double get_cellValue() {
         return _cellValue;
@@ -51,19 +71,20 @@ public class Cell
         this._expression = _expression;
     }
 
-    public HashSet<CellMapper> get_dependencies() {
+    public HashSet<Cell> get_dependencies() {
         return _dependencies;
     }
 
-    public void set_dependencies(HashSet<CellMapper> _dependencies) {
+    public void set_dependencies(HashSet<Cell> _dependencies) {
         this._dependencies = _dependencies;
     }
 
-    public static Cell create(int row, int col, Object element){
+
+    public static Cell create(int row, int col,String token, Object element){
         Cell cell = new Cell();
         cell.set_rowId(row);
         cell.set_colId(col);
-
+        cell.token = token;
         setValue(cell,element);
         return cell;
     }
@@ -72,9 +93,9 @@ public class Cell
         Boolean isExpr=isExpression(element);
         cell.set_isExpression(isExpr);
         if (isExpr) {
-            cell.set_expression(element.toString().replace("=",""));
         } else {
             cell.set_cellValue(Integer.valueOf(element.toString()));
+
         }
     }
 
@@ -82,32 +103,19 @@ public class Cell
         return element.toString().startsWith("=");
     }
 
-    // Helper method
-    /*private SheetCell getCell(String s) {
-
-        try {
-            int x = (int)s.charAt(0) % 65;
-            int y = Integer.parseInt(s.substring(1,s.length()))-1;
-            return sheetCells[x][y];
-        }catch (NumberFormatException e) {
-            System.out.println("Data format error occurred while evaluating Cell" + s);
-            System.exit(1);
-        }
-        return null;
-
-    }*/
-
-
-
-
-    private static boolean isNumber(String s) {
-        try {
-            Double.parseDouble(s);
-            return true;
-        }
-        catch (NumberFormatException e) {
-            // s is not numeric
-            return false;
-        }
+    @Override
+    public String toString() {
+        return  buildKey(get_rowId(), get_colId());
     }
+
+    public static String buildKey(int row, int col)
+    {
+        return   String.format("%s|%s", String.valueOf(row), String.valueOf(col));
+    }
+
+
+
+
+
+
 }
