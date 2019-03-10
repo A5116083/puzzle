@@ -13,13 +13,7 @@ public class CellExprProcessorService {
     private HashMap<Integer, String> _rowToAlphabet = new HashMap<Integer, String>();
 
     public CellExprProcessorService() {
-       /* _rowToAlphabet.put(0,"A");
-        _rowToAlphabet.put(1,"B");
-        _rowToAlphabet.put(2,"C");
-        _rowToAlphabet.put(3,"D");
-        _rowToAlphabet.put(4,"E");
 
-*/
        createIntToAlphabetMap();
     }
 
@@ -81,6 +75,8 @@ public class CellExprProcessorService {
 
                     {
                         depCell= Cell.create(cellMapper.getRow(),cellMapper.getCol(),cellMapper.getCellKey(), cell.get_expression());
+                        HashSet<Cell> depCellsSet = new HashSet<>(); depCellsSet.add(cell);
+                        depCell.set_dependencies(depCellsSet);
                         depCell.setResolved(false);
                         dictCells.put(key, depCell);
                     }

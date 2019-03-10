@@ -63,24 +63,26 @@ public class SpreadSheet {
         if(dependencyDictionary.containsKey(key)){
             HashSet<Cell> depCells = dependencyDictionary.get(key).stream().collect(Collectors.toCollection(HashSet::new));
             cell.set_dependencies(depCells);
-            for(Cell tempDepCell :depCells){
-                evaluate(tempDepCell);
-            }
+
 
         }
     }
 
     private  void resolveDependencies(Cell cell ){
         if(cell.get_dependencies()== null) return;
-
-        for(Cell depCell: cell.get_dependencies()){
-            if(depCell.allDependeciesResolved()){
-                evaluate(depCell);
-                resolveDependencies(depCell);
+        String key = cell.toString();
+        if(dependencyDictionary.containsKey(key)) {
+            List<Cell> cells = dependencyDictionary.get(key);
+            for (Cell depCell : cells) {
+                if (depCell.allDependeciesResolved()) {
+                    evaluate(depCell);
+                    //dependencyDictionary.get(key).remove(depCell);
+                    resolveDependencies(depCell);
+                }
             }
         }
 
-        cell.get_dependencies().clear();
+        //cell.get_dependencies().clear();
     }
     private void manageDependencies(Cell cell){
 
