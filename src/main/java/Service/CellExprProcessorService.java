@@ -23,7 +23,7 @@ public class CellExprProcessorService {
 
     public String getRowAlphaExprKey(int row, int col)
     {
-        return String.format("%s%a", _rowToAlphabet.get(row), col);
+        return String.format("%s%s", _rowToAlphabet.get(row), col);
     }
 
     public List<CellMapper> getDependentCellMappersFromExpr(String expression, Cell cell){
@@ -47,7 +47,12 @@ public class CellExprProcessorService {
 
     public static Boolean isFutureDependency(Cell cell, int currRow, int currCol)
     {
-        return  ((cell.get_colId() > currRow) || ((cell.get_colId() >= currRow) && ( cell.get_colId() > currCol)));
+        return  ((cell.get_rowId() > currRow) || ((cell.get_rowId() >= currRow) && ( cell.get_colId() > currCol)));
+    }
+
+    public static Boolean isFutureDependency(CellMapper cell)
+    {
+        return  ((cell.getRow() > cell.getCurrRow()) || ((cell.getRow() >= cell.getCurrRow()) && ( cell.getCol() > cell.getCurrCol())));
     }
 
     public HashSet<Cell> buildDependencies(Cell cell, List<CellMapper> cellMappers, HashMap<String, Cell> dictCells){
@@ -59,7 +64,9 @@ public class CellExprProcessorService {
                     if(dictCells.containsKey(key))
                         depCell = dictCells.get(key);
 
-                    if(isFutureDependency(cell,cellMapper.getRow(),cellMapper.getCol()) && depCell ==null)
+                    //if(isFutureDependency(cell,cellMapper.getCurrRow(),cellMapper.getCurrCol()) && depCell ==null)
+                    if(isFutureDependency(cellMapper) && depCell ==null)
+
                     {
                         depCell= Cell.create(cellMapper.getRow(),cellMapper.getCol(),cellMapper.getCellKey(), 0);
                         depCell.setResolved(false);

@@ -5,6 +5,15 @@ public class CellMapper {
     private int row;
     private  int col;
     private String cellKey;
+
+    public int getCurrRow() {
+        return currRow;
+    }
+
+    public int getCurrCol() {
+        return currCol;
+    }
+
     private int currRow;
     private int currCol;
 

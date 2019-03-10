@@ -74,13 +74,13 @@ public class SpreadSheet {
 
         String expToEvaluate = cell.get_expression();
         List<CellMapper> depCellMappers = _cellExprProcessorService.getDependentCellMappersFromExpr(expToEvaluate, cell);
-        _cellExprProcessorService.buildDependencies(cell, depCellMappers, cellDictionary);
-        cell.set_dependencies(_cellExprProcessorService.buildDependencies(cell, depCellMappers, cellDictionary));
+        HashSet<Cell> depCells =  _cellExprProcessorService.buildDependencies(cell, depCellMappers, cellDictionary);
+        cell.set_dependencies(depCells);
         _cellExprProcessorService.addToDependecySet(cell, dependencyDictionary);
     }
     private Cell getOrCreate(String cellVal, int rownumber, int colCounter){
         //int localCol = colCounter.incrementAndGet();
-        String key = Cell.buildKey(rownumber, colCounter;
+        String key = Cell.buildKey(rownumber, colCounter);
         Cell cell= null;
         if(cellDictionary.containsKey(key)) {
             cell = cellDictionary.get(key);

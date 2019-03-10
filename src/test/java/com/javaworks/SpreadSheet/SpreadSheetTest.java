@@ -28,7 +28,7 @@ public class SpreadSheetTest {
         AtomicInteger counter = new AtomicInteger(0);
         fileLines.stream().forEach(line -> {
             int rowCount = counter.get();
-            List<Cell> rowCells = sheet.transformToCells( rowCount, line);
+           sheet.transformToCells( rowCount, line);
 
             rowCount++;
             counter.set(rowCount);
@@ -38,7 +38,7 @@ public class SpreadSheetTest {
     public void splitToken(){
         String exp = "A0+A1*A2";
         SpreadSheet sheet = new SpreadSheet();
-        sheet.splitToken(exp);
+        //sheet.splitToken(exp);
 
     }
 

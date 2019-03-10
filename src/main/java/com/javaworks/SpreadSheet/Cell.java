@@ -28,7 +28,8 @@ public class Cell
     }
     public boolean allDependeciesResolved(){
 
-        return _dependencies.stream().anyMatch(dep ->! dep.isResolved());
+        if(_dependencies== null) return false;
+        return !_dependencies.stream().anyMatch(dep ->! dep.isResolved());
     }
 
     public double get_cellValue() {
@@ -92,10 +93,11 @@ public class Cell
     public static void setValue(Cell cell, Object element){
         Boolean isExpr=isExpression(element);
         cell.set_isExpression(isExpr);
-        if (isExpr) {
-        } else {
+        if (isExpr){
+            cell.set_expression(element.toString().replace("=", ""));
+        }else {
             cell.set_cellValue(Integer.valueOf(element.toString()));
-
+            cell.setResolved(true);
         }
     }
 
