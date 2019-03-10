@@ -48,7 +48,10 @@ public class SpreadSheet {
                     resolveDependencies(cell);
                 }
             }
-            else evaluate(cell);
+            else {
+                cell.setResolved(true);
+                resolveDependencies(cell);
+            }
 
             colnumber++;
         }
@@ -68,6 +71,8 @@ public class SpreadSheet {
     }
 
     private  void resolveDependencies(Cell cell ){
+        if(cell.get_dependencies()== null) return;
+
         for(Cell depCell: cell.get_dependencies()){
             if(depCell.allDependeciesResolved()){
                 evaluate(depCell);
@@ -103,6 +108,8 @@ public class SpreadSheet {
         }
         return cell;
     }
+
+
     private Cell evaluate(Cell currentCell)
     {
         String expression = currentCell.get_expression().replace("=","");
