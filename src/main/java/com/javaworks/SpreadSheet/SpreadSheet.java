@@ -1,23 +1,17 @@
 package com.javaworks.SpreadSheet;
-
 import Service.CellExprProcessorService;
-import org.springframework.util.StringUtils;
+import com.sun.org.apache.xpath.internal.operations.Bool;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
 
-
 public class SpreadSheet {
 
-    /*
-    Tow dimensional dynamic list object to hold the spreadsheet cells
-     */
+
     private static  List<Cell>[] sheetCells;
 
     HashMap<String,Cell> cellDictionary=new HashMap<String,Cell>();
@@ -39,7 +33,6 @@ public class SpreadSheet {
 
     public void transformToCells(final int rownumber, String rowEntry){
 
-        AtomicInteger colCounter = new AtomicInteger(0);
         if(sheetCells[rownumber]== null)
             sheetCells[rownumber] = new ArrayList<>();
 
@@ -48,16 +41,30 @@ public class SpreadSheet {
         {
 
             Cell cell = getOrCreate(cellVal, rownumber, colnumber);
-            if(cell.get_isExpression())
+            if(cell.get_isExpression()) {
                 manageDependencies(cell);
-            if (cell.allDependeciesResolved()) {
-                evaluate(cell);
-                resolveDependencies(cell);
+                if (cell.allDependeciesResolved()) {
+                    evaluate(cell);
+                    resolveDependencies(cell);
+                }
             }
+            else evaluate(cell);
+
             colnumber++;
         }
 
 
+    }
+    private void getDependecyFromOtherCell(Cell cell) {
+        String key = cell.toString();
+        if(dependencyDictionary.containsKey(key)){
+            HashSet<Cell> depCells = dependencyDictionary.get(key).stream().collect(Collectors.toCollection(HashSet::new));
+            cell.set_dependencies(depCells);
+            for(Cell tempDepCell :depCells){
+                evaluate(tempDepCell);
+            }
+
+        }
     }
 
     private  void resolveDependencies(Cell cell ){
@@ -85,6 +92,8 @@ public class SpreadSheet {
         if(cellDictionary.containsKey(key)) {
             cell = cellDictionary.get(key);
             Cell.setValue(cell,cellVal);
+            //getDependecyFromOtherCell(cell);
+
         }
         else {
             cell = Cell.create(rownumber,
@@ -96,7 +105,7 @@ public class SpreadSheet {
     }
     private Cell evaluate(Cell currentCell)
     {
-        String expression = currentCell.get_expression();
+        String expression = currentCell.get_expression().replace("=","");
         for(Cell depCell:currentCell.get_dependencies())
         {
 

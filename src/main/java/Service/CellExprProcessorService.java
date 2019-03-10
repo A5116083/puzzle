@@ -13,21 +13,33 @@ public class CellExprProcessorService {
     private HashMap<Integer, String> _rowToAlphabet = new HashMap<Integer, String>();
 
     public CellExprProcessorService() {
-        _rowToAlphabet = _rowToAlphabet;
-        _rowToAlphabet.put(0,"A");
+       /* _rowToAlphabet.put(0,"A");
         _rowToAlphabet.put(1,"B");
         _rowToAlphabet.put(2,"C");
         _rowToAlphabet.put(3,"D");
         _rowToAlphabet.put(4,"E");
+
+*/
+       createIntToAlphabetMap();
     }
 
     public String getRowAlphaExprKey(int row, int col)
     {
-        return String.format("%s%s", _rowToAlphabet.get(row), col);
+        String token = String.format("%s%s", _rowToAlphabet.get(row), col);
+        return  token;
+    }
+
+    public void createIntToAlphabetMap() {
+
+        for (int counter =1; counter < 27;counter++){
+            String aplhabet = String.valueOf((char)(counter + 64));
+            _rowToAlphabet.put(counter-1, aplhabet);
+        }
+
     }
 
     public List<CellMapper> getDependentCellMappersFromExpr(String expression, Cell cell){
-        return splitToken(expression).filter(str-> !isNumber(str))
+        return splitToken(expression.replace("=","")).filter(str-> !isNumber(str))
                 .map(token-> getCell(token, cell.get_rowId(), cell.get_colId()))
                 .collect(Collectors.toList());
 
@@ -68,7 +80,7 @@ public class CellExprProcessorService {
                     if(isFutureDependency(cellMapper) && depCell ==null)
 
                     {
-                        depCell= Cell.create(cellMapper.getRow(),cellMapper.getCol(),cellMapper.getCellKey(), 0);
+                        depCell= Cell.create(cellMapper.getRow(),cellMapper.getCol(),cellMapper.getCellKey(), cell.get_expression());
                         depCell.setResolved(false);
                         dictCells.put(key, depCell);
                     }

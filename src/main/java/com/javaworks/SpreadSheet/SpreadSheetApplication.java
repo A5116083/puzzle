@@ -14,8 +14,13 @@ public class SpreadSheetApplication {
 		SpringApplication.run(SpreadSheetApplication.class, args);
 
 		List<String> fileLines = new ArrayList<>();
+		//SET A
 		fileLines.add("2,4,1,=A0+A1*A2");
 		fileLines.add("=A3*(A0+1),=B2,0,=A0+1");
+
+		//SET B
+		//fileLines.add("2,4,=B2,=A0+A1*A2");
+		//fileLines.add("=A3*(A0+1),=B2,0,=A0+1");
 
 		SpreadSheet sheet = new SpreadSheet();
 		AtomicInteger counter = new AtomicInteger(0);

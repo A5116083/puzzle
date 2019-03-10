@@ -29,7 +29,8 @@ public class Cell
     public boolean allDependeciesResolved(){
 
         if(_dependencies== null) return false;
-        return !_dependencies.stream().anyMatch(dep ->! dep.isResolved());
+        if(_dependencies.isEmpty()) return false;
+        return !_dependencies.stream().anyMatch(dep -> dep.isResolved()==false);
     }
 
     public double get_cellValue() {
@@ -94,7 +95,7 @@ public class Cell
         Boolean isExpr=isExpression(element);
         cell.set_isExpression(isExpr);
         if (isExpr){
-            cell.set_expression(element.toString().replace("=", ""));
+            cell.set_expression(element.toString()); // .replace("=", ""));
         }else {
             cell.set_cellValue(Integer.valueOf(element.toString()));
             cell.setResolved(true);
