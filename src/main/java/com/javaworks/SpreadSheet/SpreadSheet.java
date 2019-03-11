@@ -1,85 +1,94 @@
 package com.javaworks.SpreadSheet;
+import Model.Cell;
+import Repository.CellRepository;
+import Repository.ICellRepository;
+import Service.CellDependencyService;
 import Service.CellExprProcessorService;
-import com.sun.org.apache.xpath.internal.operations.Bool;
+import Service.ICellDependencyService;
+import Service.ICellExprProcessorService;
+import Utils.CellUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
-import java.util.*;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptEngine;
-import javax.script.ScriptException;
 
+//@Component
 public class SpreadSheet {
 
 
-    private static  List<Cell>[] sheetCells;
+    //private static  List<Cell>[] sheetCells;
 
-    HashMap<String,Cell> cellDictionary=new HashMap<String,Cell>();
 
+    //@Autowired
+    private CellRepository _cellRepository;
+    //@Autowired
     private CellExprProcessorService _cellExprProcessorService;
+    //@Autowired
+    private CellDependencyService _cellDependencyService;
 
-
-    Hashtable<String, List<Cell>> dependencyDictionary;
-    ScriptEngine engine = null;
 
     public SpreadSheet() {
-        //Holds the fixed Rows and dynamic cells
-        sheetCells = new ArrayList[26];
-        dependencyDictionary = new Hashtable<String, List<Cell>> ();
-        ScriptEngineManager mgr = new ScriptEngineManager();
-        engine = mgr.getEngineByName("JavaScript");
-        _cellExprProcessorService = new CellExprProcessorService();
+        _cellRepository = new CellRepository();
+        _cellExprProcessorService = new CellExprProcessorService(_cellRepository);
+        _cellDependencyService = new CellDependencyService(_cellExprProcessorService, _cellRepository);
     }
 
     public void transformToCells(final int rownumber, String rowEntry){
-
-        if(sheetCells[rownumber]== null)
-            sheetCells[rownumber] = new ArrayList<>();
-
         int colnumber =0;
         for(String cellVal:rowEntry.split(","))
         {
 
             Cell cell = getOrCreate(cellVal, rownumber, colnumber);
             if(cell.get_isExpression()) {
-                manageDependencies(cell);
-                if (cell.allDependeciesResolved()) {
-                    evaluate(cell);
-                    resolveDependencies(cell);
+                _cellDependencyService.manageDependencies(cell);
+                if (cell.allDependenciesResolved()) {
+                    _cellDependencyService.evaluate(cell);
+                    _cellDependencyService.resolveDependencies(cell);
                 }
             }
             else {
-                cell.setResolved(true);
-                resolveDependencies(cell);
+                cell.set_isResolved(true);
+                _cellDependencyService.resolveDependencies(cell);
             }
-
             colnumber++;
         }
 
-
     }
-    private void getDependecyFromOtherCell(Cell cell) {
-        String key = cell.toString();
-        if(dependencyDictionary.containsKey(key)){
-            HashSet<Cell> depCells = dependencyDictionary.get(key).stream().collect(Collectors.toCollection(HashSet::new));
-            cell.set_dependencies(depCells);
+
+    private Cell getOrCreate(String cellVal, int rownumber, int colCounter){
+
+        String key = CellUtils.Utils.buildKey(rownumber, colCounter);
+        Cell cell;
+        //if(_cellRepository.get_cellDictionary().containsKey(key)) {
+        if(_cellRepository.containsCellKey(key)) {
+            cell = _cellRepository.getSheetCell(key);
+            Cell.setValue(cell,cellVal);
 
 
         }
+        else {
+            cell = Cell.create(rownumber,
+                    colCounter,
+                    CellUtils.Utils.getRowAlphaExprKey(rownumber, colCounter), cellVal);
+
+            _cellRepository.addToSheetCell(key, cell);
+        }
+        return cell;
     }
 
-    private  void resolveDependencies(Cell cell ){
+    /*private  void resolveDependencies(Cell cell ){
         if(cell.get_dependencies()== null) return;
         String key = cell.toString();
         if(dependencyDictionary.containsKey(key)) {
             List<Cell> cells = dependencyDictionary.get(key);
             for (Cell depCell : cells) {
-                if (depCell.allDependeciesResolved()) {
+                if (depCell.allDependenciesResolved()) {
                     evaluate(depCell);
                     //dependencyDictionary.get(key).remove(depCell);
                     resolveDependencies(depCell);
                 }
+                depCell.set_isResolved(true);
             }
+            cell.set_isResolved(true);
         }
 
         //cell.get_dependencies().clear();
@@ -90,26 +99,9 @@ public class SpreadSheet {
         List<CellMapper> depCellMappers = _cellExprProcessorService.getDependentCellMappersFromExpr(expToEvaluate, cell);
         HashSet<Cell> depCells =  _cellExprProcessorService.buildDependencies(cell, depCellMappers, cellDictionary);
         cell.set_dependencies(depCells);
-        _cellExprProcessorService.addToDependecySet(cell, dependencyDictionary);
+        _cellExprProcessorService.addToDependencySet(cell, dependencyDictionary);
     }
-    private Cell getOrCreate(String cellVal, int rownumber, int colCounter){
-        //int localCol = colCounter.incrementAndGet();
-        String key = Cell.buildKey(rownumber, colCounter);
-        Cell cell= null;
-        if(cellDictionary.containsKey(key)) {
-            cell = cellDictionary.get(key);
-            Cell.setValue(cell,cellVal);
-            //getDependecyFromOtherCell(cell);
 
-        }
-        else {
-            cell = Cell.create(rownumber,
-                    colCounter,
-                    _cellExprProcessorService.getRowAlphaExprKey(rownumber, colCounter), cellVal);
-            cellDictionary.put(key, cell);
-        }
-        return cell;
-    }
 
 
     private Cell evaluate(Cell currentCell)
@@ -125,13 +117,13 @@ public class SpreadSheet {
 
             //TODO: Detect cyclic dependency
 
-           /* if(refCell.get_isExpression())
-                refCell = evaluate(refCell);*/
+           *//* if(refCell.get_isExpression())
+                refCell = evaluate(refCell);*//*
 
             expression = expression.replace(token, String.valueOf(refCell.get_cellValue()));
         }
         currentCell.set_cellValue(computeExpression(expression));
-        currentCell.setResolved(true);
+        currentCell.set_isResolved(true);
         return currentCell;
     }
 
@@ -141,12 +133,11 @@ public class SpreadSheet {
         try {
             return (double) engine.eval(exp);
         } catch (ScriptException e) {
-            //TODO: OK to swallow exception or not ?
             e.printStackTrace();
             return  -1;
         }
 
-    }
+    }*/
 
 
 

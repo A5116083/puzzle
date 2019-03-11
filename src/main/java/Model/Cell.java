@@ -1,4 +1,6 @@
-package com.javaworks.SpreadSheet;
+package Model;
+
+import Utils.CellUtils;
 
 import java.util.HashSet;
 
@@ -10,6 +12,7 @@ public class Cell
     private int _colId;
     private String _expression;
     private HashSet<Cell> _dependencies;
+    private boolean _isResolved;
 
     public String getToken() {
         return token;
@@ -17,21 +20,16 @@ public class Cell
 
     private String token;
 
-    public void setResolved(boolean resolved) {
-        isResolved = resolved;
+    public void set_isResolved(boolean _isResolved) {
+        this._isResolved = _isResolved;
     }
 
-    private boolean isResolved;
 
-    public boolean isResolved() {
-        return isResolved;
-    }
-    public boolean allDependeciesResolved(){
 
-        if(_dependencies== null) return false;
-        if(_dependencies.isEmpty()) return false;
-        return !_dependencies.stream().anyMatch(dep -> dep.isResolved()==false);
+    public boolean is_isResolved() {
+        return _isResolved;
     }
+
 
     public double get_cellValue() {
         return _cellValue;
@@ -81,6 +79,11 @@ public class Cell
         this._dependencies = _dependencies;
     }
 
+    public void addDependency(Cell dependentCell){
+        if(this._dependencies==null)
+            this._dependencies = new HashSet<>();
+        this._dependencies.add(dependentCell);
+    }
 
     public static Cell create(int row, int col,String token, Object element){
         Cell cell = new Cell();
@@ -92,32 +95,29 @@ public class Cell
     }
 
     public static void setValue(Cell cell, Object element){
-        Boolean isExpr=isExpression(element);
+        Boolean isExpr= CellUtils.Utils.isExpression(element);
         cell.set_isExpression(isExpr);
         if (isExpr){
-            cell.set_expression(element.toString()); // .replace("=", ""));
+            cell.set_expression(element.toString());
         }else {
             cell.set_cellValue(Integer.valueOf(element.toString()));
-            cell.setResolved(true);
+            cell.set_isResolved(true);
         }
     }
 
-    public static Boolean isExpression(Object element){
-        return element.toString().startsWith("=");
+    public boolean allDependenciesResolved(){
+
+        if(_dependencies== null) return false;
+        if(_dependencies.isEmpty()) return false;
+        return !_dependencies.stream().anyMatch(dep -> dep.is_isResolved()==false);
     }
+
+
 
     @Override
     public String toString() {
-        return  buildKey(get_rowId(), get_colId());
+        return  CellUtils.Utils.buildKey(get_rowId(), get_colId());
     }
-
-    public static String buildKey(int row, int col)
-    {
-        return   String.format("%s|%s", String.valueOf(row), String.valueOf(col));
-    }
-
-
-
 
 
 
