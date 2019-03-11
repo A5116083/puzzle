@@ -10,13 +10,11 @@ import Utils.CellUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 
 //@Component
 public class SpreadSheet {
-
-
-    //private static  List<Cell>[] sheetCells;
-
 
     //@Autowired
     private CellRepository _cellRepository;
@@ -58,7 +56,6 @@ public class SpreadSheet {
 
         String key = CellUtils.Utils.buildKey(rownumber, colCounter);
         Cell cell;
-        //if(_cellRepository.get_cellDictionary().containsKey(key)) {
         if(_cellRepository.containsCellKey(key)) {
             cell = _cellRepository.getSheetCell(key);
             Cell.setValue(cell,cellVal);
@@ -74,75 +71,10 @@ public class SpreadSheet {
         }
         return cell;
     }
-
-    /*private  void resolveDependencies(Cell cell ){
-        if(cell.get_dependencies()== null) return;
-        String key = cell.toString();
-        if(dependencyDictionary.containsKey(key)) {
-            List<Cell> cells = dependencyDictionary.get(key);
-            for (Cell depCell : cells) {
-                if (depCell.allDependenciesResolved()) {
-                    evaluate(depCell);
-                    //dependencyDictionary.get(key).remove(depCell);
-                    resolveDependencies(depCell);
-                }
-                depCell.set_isResolved(true);
-            }
-            cell.set_isResolved(true);
-        }
-
-        //cell.get_dependencies().clear();
-    }
-    private void manageDependencies(Cell cell){
-
-        String expToEvaluate = cell.get_expression();
-        List<CellMapper> depCellMappers = _cellExprProcessorService.getDependentCellMappersFromExpr(expToEvaluate, cell);
-        HashSet<Cell> depCells =  _cellExprProcessorService.buildDependencies(cell, depCellMappers, cellDictionary);
-        cell.set_dependencies(depCells);
-        _cellExprProcessorService.addToDependencySet(cell, dependencyDictionary);
-    }
-
-
-
-    private Cell evaluate(Cell currentCell)
+    public List<Cell>[] getSheetCells()
     {
-        String expression = currentCell.get_expression().replace("=","");
-        for(Cell depCell:currentCell.get_dependencies())
-        {
-
-            String key = depCell.toString();
-            String token = depCell.getToken();
-
-            Cell refCell = cellDictionary.get(key);
-
-            //TODO: Detect cyclic dependency
-
-           *//* if(refCell.get_isExpression())
-                refCell = evaluate(refCell);*//*
-
-            expression = expression.replace(token, String.valueOf(refCell.get_cellValue()));
-        }
-        currentCell.set_cellValue(computeExpression(expression));
-        currentCell.set_isResolved(true);
-        return currentCell;
+        return _cellRepository.get_sheetCells();
     }
-
-
-    private double computeExpression(String exp)
-    {
-        try {
-            return (double) engine.eval(exp);
-        } catch (ScriptException e) {
-            e.printStackTrace();
-            return  -1;
-        }
-
-    }*/
-
-
-
-
-
 
 
 }

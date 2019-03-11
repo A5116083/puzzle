@@ -10,6 +10,8 @@ import java.util.List;
 //@Service
 public class CellRepository implements ICellRepository {
 
+
+
     //private HashMap<String,Cell> _cellDictionary =new HashMap<>();
     private List<Cell>[] _sheetCells   = new ArrayList[26];
 
@@ -28,7 +30,9 @@ public class CellRepository implements ICellRepository {
             _sheetCells[count] = cells;
         }
     }
-
+    public List<Cell>[] get_sheetCells() {
+        return _sheetCells;
+    }
     @Override
     public boolean containsCellKey(String key) {
         CellRef cellRef = CellUtils.Utils.buildCellRefFromKey(key);

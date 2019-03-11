@@ -1,47 +1,98 @@
 package com.javaworks.SpreadSheet;
 
+
+import Service.CsvReaderService;
+import Service.CsvWriterService;
 import Utils.CellUtils;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.io.IOException;
+import java.util.stream.Stream;
 
 @SpringBootApplication
-@ComponentScan(basePackages = {"Repository", "Service","com.javaworks.SpreadSheet"})
+//@ComponentScan(basePackages = {"Repository", "Service","com.javaworks.SpreadSheet"})
 public class SpreadSheetApplication {
+
+	private static CsvWriterService writerService;
+	private static CsvReaderService readerService;
 
 	public static void main(String[] args) {
 		SpringApplication.run(SpreadSheetApplication.class, args);
+
+		ArgsHolder argsHolder = processArgs(args);
+		System.out.println(argsHolder.toString());
+
 		CellUtils.Utils.createIntToAlphabetMap();
-
-		List<String> fileLines = new ArrayList<>();
-		//SET A
-		fileLines.add("2,4,1,=A0+A1*A2"); //future dependency
-		fileLines.add("=A3*(A0+1),=B2,0,=A0+1");
-
-		//SET B
-		//fileLines.add("2,4,=B2,=A0+A1*A2"); //multiple future dependency
-		//fileLines.add("=A3*(A0+1),=B2,0,=A0+1");
-
-		//SET C
-		/*fileLines.add("2,4,=B1,=A0+A1*A2");  //multi level future dependency
-		fileLines.add("=A3*(A0+1),=B2,0,=A0+1");*/
-
 		SpreadSheet sheet = new SpreadSheet();
-		AtomicInteger counter = new AtomicInteger(0);
-		fileLines.stream().forEach(line -> {
-			int rowCount = counter.get();
-			sheet.transformToCells( rowCount, line);
 
-			rowCount++;
-			counter.set(rowCount);
+
+		writerService = new CsvWriterService();
+		readerService = new CsvReaderService();
+	    Stream<String> inputStream =  readerService.processCsvFile(argsHolder.get_inputFileName());
+
+		System.out.println("Reading Input file ");
+
+		inputStream.forEach(line-> {
+			System.out.println(line);
+			sheet.transformToCells( ArgsHolder.FileLineCounter, line);
+			ArgsHolder.FileLineCounter++;
 		});
 
+		try {
+			System.out.println("Starting output file generation process");
+			writerService.writeToCsv(argsHolder.get_outputFileName(), sheet.getSheetCells());
+			System.out.println("File generated successfully");
+		}catch (IOException ex) {
+			ex.printStackTrace();
+		}
 
+	}
+
+	private static ArgsHolder processArgs(String[] args) {
+		if(args.length!= 4 ) {
+			System.out.println(" invalid arguments, expects four arguments in format -i inputCsv -o outputCsv ");
+		}
+		String inputFileName =null;
+		String outputFileName = null;
+
+		if(args[0].equals("-i")){
+		inputFileName = args[1];
+		} else if (args[2].equals("-i")){
+			inputFileName = args[3];
+		}
+
+		if(args[0].equals("-o")){
+			outputFileName = args[1];
+		} else if (args[2].equals("-o")){
+			outputFileName = args[3];
+		}
+		return new ArgsHolder(inputFileName, outputFileName);
+	}
+
+
+	private static class ArgsHolder{
+		private String _inputFileName;
+		private String _outputFileName;
+		public static int FileLineCounter=0;
+
+		public ArgsHolder(String inputFileName, String outputFileName) {
+			this._inputFileName = inputFileName;
+			this._outputFileName = outputFileName;
+		}
+
+		public String get_inputFileName() {
+			return _inputFileName;
+		}
+
+		public String get_outputFileName() {
+			return _outputFileName;
+		}
+
+		@Override
+		public String toString() {
+			return String.format("InputFileName: %s, OutputFileName : %s", _inputFileName, _outputFileName);
+		}
 	}
 
 }
