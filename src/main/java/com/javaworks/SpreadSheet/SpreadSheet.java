@@ -13,21 +13,18 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 
-//@Component
+@Component
 public class SpreadSheet {
 
-    //@Autowired
-    private CellRepository _cellRepository;
-    //@Autowired
-    private CellExprProcessorService _cellExprProcessorService;
-    //@Autowired
-    private CellDependencyService _cellDependencyService;
-
+    @Autowired
+    private ICellRepository _cellRepository;
+    @Autowired
+    private ICellExprProcessorService _cellExprProcessorService;
+    @Autowired
+    private ICellDependencyService _cellDependencyService;
 
     public SpreadSheet() {
-        _cellRepository = new CellRepository();
-        _cellExprProcessorService = new CellExprProcessorService(_cellRepository);
-        _cellDependencyService = new CellDependencyService(_cellExprProcessorService, _cellRepository);
+
     }
 
     public void transformToCells(final int rownumber, String rowEntry){

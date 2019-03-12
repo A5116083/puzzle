@@ -1,8 +1,11 @@
 package Service;
 
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
+
 import java.io.*;
 import java.util.stream.Stream;
-
+@Component
 public class CsvReaderService  {
 
 

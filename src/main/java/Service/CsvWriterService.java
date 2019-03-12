@@ -1,7 +1,6 @@
 package Service;
 
 import Model.Cell;
-
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -9,7 +8,9 @@ import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.stereotype.Component;
 
+@Component
 public class CsvWriterService {
 
     public void writeToCsv(String fileName, List<Cell>[] sheetCells)

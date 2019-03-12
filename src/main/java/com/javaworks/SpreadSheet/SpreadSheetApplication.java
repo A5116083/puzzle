@@ -4,6 +4,8 @@ package com.javaworks.SpreadSheet;
 import Service.CsvReaderService;
 import Service.CsvWriterService;
 import Utils.CellUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
@@ -11,25 +13,36 @@ import java.io.IOException;
 import java.util.stream.Stream;
 
 @SpringBootApplication
-//@ComponentScan(basePackages = {"Repository", "Service","com.javaworks.SpreadSheet"})
-public class SpreadSheetApplication {
+@ComponentScan({"com.javaworks.SpreadSheet","Service","Repository"})
+public class SpreadSheetApplication implements CommandLineRunner {
 
-	private static CsvWriterService writerService;
-	private static CsvReaderService readerService;
+   @Autowired
+	private  CsvWriterService writerService;
+    @Autowired
+	private  CsvReaderService readerService;
+
+	@Autowired
+	private SpreadSheet sheet;
+
 
 	public static void main(String[] args) {
 		SpringApplication.run(SpreadSheetApplication.class, args);
+	}
+	@Override
+
+	public void run(String... args) {
+		System.out.println("EXECUTING : command line runner");
 
 		ArgsHolder argsHolder = processArgs(args);
 		System.out.println(argsHolder.toString());
 
 		CellUtils.Utils.createIntToAlphabetMap();
-		SpreadSheet sheet = new SpreadSheet();
+		//SpreadSheet sheet = new SpreadSheet();
 
 
-		writerService = new CsvWriterService();
-		readerService = new CsvReaderService();
-	    Stream<String> inputStream =  readerService.processCsvFile(argsHolder.get_inputFileName());
+		/*writerService = new CsvWriterService();
+		readerService = new CsvReaderService();*/
+		Stream<String> inputStream =  readerService.processCsvFile(argsHolder.get_inputFileName());
 
 		System.out.println("Reading Input file ");
 
@@ -46,10 +59,10 @@ public class SpreadSheetApplication {
 		}catch (IOException ex) {
 			ex.printStackTrace();
 		}
-
 	}
 
-	private static ArgsHolder processArgs(String[] args) {
+
+	private ArgsHolder processArgs(String[] args) {
 		if(args.length!= 4 ) {
 			System.out.println(" invalid arguments, expects four arguments in format -i inputCsv -o outputCsv ");
 		}

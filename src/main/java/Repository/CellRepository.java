@@ -3,11 +3,12 @@ package Repository;
 import Model.Cell;
 import Utils.CellRef;
 import Utils.CellUtils;
+import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 
-//@Service
+@Component
 public class CellRepository implements ICellRepository {
 
 

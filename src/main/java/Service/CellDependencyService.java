@@ -3,6 +3,7 @@ package Service;
 import Model.Cell;
 import Model.CellMapper;
 import Repository.CellRepository;
+import Repository.ICellRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,19 +13,19 @@ import javax.script.ScriptException;
 import java.util.HashSet;
 import java.util.List;
 
-//@Service
+@Service
 public class CellDependencyService implements ICellDependencyService {
 
-    //@Autowired
-    private CellExprProcessorService _cellExprProcessorService;
-    //@Autowired
-    private CellRepository _cellRepository;
+    @Autowired
+    private ICellExprProcessorService _cellExprProcessorService;
+    @Autowired
+    private ICellRepository _cellRepository;
 
     ScriptEngine engine = null;
 
-    public CellDependencyService(CellExprProcessorService _cellExprProcessorService, CellRepository _cellRepository) {
-        this._cellExprProcessorService = _cellExprProcessorService;
-        this._cellRepository = _cellRepository;
+    public CellDependencyService(){//(CellExprProcessorService _cellExprProcessorService, CellRepository _cellRepository) {
+        /*this._cellExprProcessorService = _cellExprProcessorService;
+        this._cellRepository = _cellRepository;*/
         ScriptEngineManager mgr = new ScriptEngineManager();
         engine = mgr.getEngineByName("JavaScript");
     }
