@@ -7,7 +7,9 @@ import java.util.Hashtable;
 import java.util.List;
 
 public interface ICellRepository {
+
     boolean containsCellKey(String key);
+
      List<Cell>[] get_sheetCells();
 
     Hashtable<String, List<Cell>> get_dependencyDictionary();

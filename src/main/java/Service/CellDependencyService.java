@@ -2,11 +2,9 @@ package Service;
 
 import Model.Cell;
 import Model.CellMapper;
-import Repository.CellRepository;
 import Repository.ICellRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
@@ -23,9 +21,8 @@ public class CellDependencyService implements ICellDependencyService {
 
     ScriptEngine engine = null;
 
-    public CellDependencyService(){//(CellExprProcessorService _cellExprProcessorService, CellRepository _cellRepository) {
-        /*this._cellExprProcessorService = _cellExprProcessorService;
-        this._cellRepository = _cellRepository;*/
+
+    public CellDependencyService(){
         ScriptEngineManager mgr = new ScriptEngineManager();
         engine = mgr.getEngineByName("JavaScript");
     }
@@ -39,15 +36,13 @@ public class CellDependencyService implements ICellDependencyService {
             for (Cell depCell : cells) {
                 if (depCell.allDependenciesResolved()) {
                     evaluate(depCell);
-                    //dependencyDictionary.get(key).remove(depCell);
+
                     resolveDependencies(depCell);
                 }
                 depCell.set_isResolved(true);
             }
             cell.set_isResolved(true);
         }
-
-        //cell.get_dependencies().clear();
     }
     @Override
     public void manageDependencies(Cell cell){

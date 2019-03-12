@@ -1,11 +1,7 @@
 package com.javaworks.SpreadSheet;
 import Model.Cell;
-import Repository.CellRepository;
 import Repository.ICellRepository;
-import Service.CellDependencyService;
-import Service.CellExprProcessorService;
 import Service.ICellDependencyService;
-import Service.ICellExprProcessorService;
 import Utils.CellUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -18,8 +14,7 @@ public class SpreadSheet {
 
     @Autowired
     private ICellRepository _cellRepository;
-    @Autowired
-    private ICellExprProcessorService _cellExprProcessorService;
+
     @Autowired
     private ICellDependencyService _cellDependencyService;
 

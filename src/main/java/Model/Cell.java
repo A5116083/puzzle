@@ -64,6 +64,7 @@ public class Cell
     }
 
     public String get_expression() {
+        if(_expression== null) return  "";
         return _expression;
     }
 

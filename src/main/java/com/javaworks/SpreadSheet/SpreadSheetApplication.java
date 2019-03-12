@@ -1,6 +1,5 @@
 package com.javaworks.SpreadSheet;
 
-
 import Service.CsvReaderService;
 import Service.CsvWriterService;
 import Utils.CellUtils;
@@ -16,8 +15,9 @@ import java.util.stream.Stream;
 @ComponentScan({"com.javaworks.SpreadSheet","Service","Repository"})
 public class SpreadSheetApplication implements CommandLineRunner {
 
-   @Autowired
+    @Autowired
 	private  CsvWriterService writerService;
+
     @Autowired
 	private  CsvReaderService readerService;
 
@@ -37,11 +37,7 @@ public class SpreadSheetApplication implements CommandLineRunner {
 		System.out.println(argsHolder.toString());
 
 		CellUtils.Utils.createIntToAlphabetMap();
-		//SpreadSheet sheet = new SpreadSheet();
 
-
-		/*writerService = new CsvWriterService();
-		readerService = new CsvReaderService();*/
 		Stream<String> inputStream =  readerService.processCsvFile(argsHolder.get_inputFileName());
 
 		System.out.println("Reading Input file ");

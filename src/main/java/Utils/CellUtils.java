@@ -1,15 +1,10 @@
 package Utils;
 
-import Model.Cell;
 import org.springframework.util.StringUtils;
-
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.stream.Stream;
 
 public  class  CellUtils {
-
-
 
     public static  class  Utils {
 
@@ -33,7 +28,7 @@ public  class  CellUtils {
         public static Stream<String> splitToken(String exp){
             final String operatorsRegex = "[-\\+\\*\\(\\)]";
 
-            Stream<String> expTokens =Stream.of(exp
+            Stream<String> expTokens =Stream.of(exp.replace("=","")
                     .split(operatorsRegex))
                     .filter(t-> !StringUtils.isEmpty(t))
                     .distinct();

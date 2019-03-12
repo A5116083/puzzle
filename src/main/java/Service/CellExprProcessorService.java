@@ -19,7 +19,7 @@ public class CellExprProcessorService implements ICellExprProcessorService {
 
     @Override
     public List<CellMapper> getDependentCellMappersFromExpr(String expression, Cell cell){
-        return CellUtils.Utils.splitToken(expression.replace("=",""))
+        return CellUtils.Utils.splitToken(expression)
                 .filter(str-> !CellUtils.Utils.isNumber(str))
                 .map(token-> CellMapper.getCell(token, cell.get_rowId(), cell.get_colId()))
                 .collect(Collectors.toList());
